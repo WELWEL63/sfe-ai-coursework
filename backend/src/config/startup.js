@@ -1,6 +1,10 @@
 import s3Client from "./s3.js";
 import { ListBucketsCommand } from "@aws-sdk/client-s3";
-import { colors, writeErrorLogs } from "../utils/errorWriter.js";
+import {
+  colors,
+  generateErrorLog,
+  appendToErrorLog,
+} from "../utils/errorWriter.js";
 import connectDB from "./db.js";
 import redisClient from "./redis.js";
 import resendClient from "./resend.js";
@@ -112,12 +116,13 @@ async function serviceStartup() {
   }
 
   if (errorLogs.length > 0) {
-    await writeErrorLogs(
-      "service_startup",
-      errorLogs,
-      "Service startup failed"
-    );
+    await appendToErrorLog(cfg.errorLogFile, errorLogs.join("\n"));
     console.log(errorMessage + colors.reset);
+    console.log(
+      colors.red +
+        `Shutting Down - Startup Failed: Error log saved to ${errorLogFile}. Please check the log for details.` +
+        colors.reset
+    );
     process.exit(1);
   } else {
     console.log(successMessage + colors.reset);

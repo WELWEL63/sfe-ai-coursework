@@ -1,32 +1,34 @@
 import cfg from "../config/config.js";
-import { makeJWT } from "../middleware/jwt.js";
-import { makeRefreshToken } from "../middleware/refreshToken.js";
+import { BadRequestError } from "../middleware/errorMiddleware.js";
+import { makeJWT } from "../middleware/jwtMiddleware.js";
+import { makeRefreshToken } from "../middleware/refreshTokenMiddleware.js";
 import Users from "../models/usersModel.js";
 import { hashPassword } from "../utils/hashedPass.js";
-import { HTTPCodes, respondWithErrorJson } from "../utils/json.js";
+import {
+  sanitiseInputText,
+  sanitiseInputEmail,
+} from "../utils/inputSantise.js";
+import { HTTPCodes, respondWithJson } from "../utils/json.js";
 import { evaulatePassword } from "../utils/passwordStrength.js";
 
 export async function handlerMakeUser(req, res) {
   const { username, email, password } = req?.body || {};
   if (!username || !email || !password) {
-    return respondWithErrorJson(
-      res,
-      HTTPCodes.BAD_REQUEST,
-      "Username, email, and password are required."
-    );
+    throw new BadRequestError("Username, email, and password are required.");
   }
+  const cleanUsername = sanitiseInputText(username);
+  const cleanEmail = sanitiseInputEmail(email);
+  const cleanPassword = sanitiseInputText(password);
 
-  const cleanPassword = password.trim();
   const { valid, reason } = evaulatePassword(cleanPassword);
   if (!valid) {
-    console.log("Password validation failed:", reason);
-    return respondWithErrorJson(res, HTTPCodes.BAD_REQUEST, reason);
+    throw new BadRequestError(reason);
   }
 
   const hashPass = await hashPassword(cleanPassword);
   const newUser = new Users({
-    username: username,
-    email: email,
+    username: cleanUsername,
+    email: cleanEmail,
     passwordHash: hashPass,
     role: "user",
   });
@@ -34,7 +36,7 @@ export async function handlerMakeUser(req, res) {
   try {
     const savedUser = await newUser.save();
     const refreshToken = await makeRefreshToken(savedUser._id);
-    const accessToken = await makeJWT(savedUser.email);
+    const accessToken = await makeJWT(savedUser._id);
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -50,25 +52,17 @@ export async function handlerMakeUser(req, res) {
       maxAge: cfg.jwtExpiresIn * 1000,
     });
 
-    return res.status(HTTPCodes.CREATED).json({
+    return respondWithJson(res, HTTPCodes.CREATED, {
+      message: "User created successfully",
       userID: savedUser._id,
       email: savedUser.email,
       username: savedUser.username,
-      role: savedUser.role,
+      mfaEnabled: savedUser.mfaEnabled,
       createdAt: savedUser.createdAt,
     });
   } catch (error) {
     if (error.code === 11000) {
-      return respondWithErrorJson(
-        res,
-        HTTPCodes.BAD_REQUEST,
-        "Email is already registered."
-      );
+      throw new BadRequestError("Email is already registered.");
     }
-    return respondWithErrorJson(
-      res,
-      HTTPCodes.INTERNAL_SERVER_ERROR,
-      "An error occurred while creating the user."
-    );
   }
 }

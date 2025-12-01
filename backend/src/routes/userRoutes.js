@@ -3,17 +3,20 @@ import { handlerGetUser } from "../handlers/handlerGetUser.js";
 import { handlerMakeUser } from "../handlers/handlerCreateUser.js";
 import { handlerDeleteUser } from "../handlers/handlerDeleteUser.js";
 import { handlerUpdateUser } from "../handlers/handlerUpdateUser.js";
-
+import { authRoute } from "../middleware/authenticatedRouteMiddleware.js";
+import { handlerLogIn } from "../handlers/handlerLogIn.js";
 const router = express.Router();
 
 router.post("/", handlerMakeUser);
 
+router.post("/login", handlerLogIn);
+
 // Authenticated Routes
 
-router.get("/", handlerGetUser);
+router.get("/", authRoute, handlerGetUser);
 
-router.put("/", handlerUpdateUser);
+router.put("/", authRoute, handlerUpdateUser);
 
-router.delete("/", handlerDeleteUser);
+router.delete("/", authRoute, handlerDeleteUser);
 
 export default router;

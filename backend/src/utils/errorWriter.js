@@ -7,16 +7,42 @@ export const colors = {
   yellow: "\x1b[33m",
 };
 
-export async function writeErrorLogs(name, errorLogs, errorMessage) {
+export const logEntry = `
+**********************************
+*        ERROR LOG ENTRY        *
+**********************************
+Timestamp: {{TIMESTAMP}}
+Error: {{ERROR_MESSAGE}}
+
+Request Info:
+Method: {{REQUEST_METHOD}}
+URL: {{REQUEST_URL}}
+Headers: {{REQUEST_HEADERS}}
+Body: {{REQUEST_BODY}}
+
+Stack Trace:
+{{STACK_TRACE}}
+
+**********************************
+
+`;
+
+export async function generateErrorLog() {
   const dateNow = new Date();
-  const fileName = `${dateNow.toISOString()}_${name}_errors_${Math.random()
-    .toString()
-    .slice(2, 6)}.log`;
-  errorLogs.unshift(`${name} errors logged at ${dateNow.toISOString()}:\n`);
-  fs.writeFileSync(`logs/${fileName}`, errorLogs.join("\n"));
-  console.log(
-    colors.yellow +
-      `** ${errorMessage} - Some errors occurred. Check logs/${fileName} for details.` +
-      colors.reset
+  const fileName = `${dateNow.toISOString()}_error_log.log`;
+  const fileLocation = `logs/${fileName}`;
+  fs.writeFileSync(
+    fileLocation,
+    `Error log created at ${dateNow.toISOString()}\n`
   );
+  console.log(`Error log file created at: ${fileLocation}`);
+  return fileLocation;
+}
+
+export async function appendToErrorLog(fileLocation, msg) {
+  try {
+    fs.appendFileSync(fileLocation, msg + "\n");
+  } catch (error) {
+    console.error("Failed to append to error log:", error);
+  }
 }

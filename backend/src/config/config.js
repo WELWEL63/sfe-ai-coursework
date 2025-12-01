@@ -1,16 +1,19 @@
 import dotenv from "dotenv";
-import { colors } from "../utils/errorWriter.js";
+import { colors, generateErrorLog } from "../utils/errorWriter.js";
 
 dotenv.config();
 
 const cfg = {
   port: getFromEnv("PORT"),
   nodeEnv: getFromEnv("NODE_ENV"),
+  resetPasswordURL: getFromEnv("RESET_PASSWORD_URL"),
   mongoURI: getFromEnv("MONGO_URI"),
+
   jwtSecret: getFromEnv("JWT_SECRET"),
   jwtIss: getFromEnv("JWT_ISS"),
   jwtExpiresIn: getFromEnv("JWT_EXPIRES_IN"),
   refreshTokenExpiresIn: getFromEnv("REFRESH_TOKEN_EXPIRES_IN"),
+
   awsAccessKeyId: getFromEnv("AWS_ACCESS_KEY_ID"),
   awsSecretAccessKey: getFromEnv("AWS_SECRET_ACCESS_KEY"),
 
@@ -19,6 +22,8 @@ const cfg = {
 
   resendApiKey: getFromEnv("RESEND_API_KEY"),
   resendSender: getFromEnv("RESEND_SENDER"),
+
+  errorLogFile: await generateErrorLog(),
 };
 
 function getFromEnv(key) {

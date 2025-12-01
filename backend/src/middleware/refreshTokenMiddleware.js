@@ -2,14 +2,14 @@ import RefreshToken from "../models/refreshTokenModel.js";
 import cfg from "../config/config.js";
 import { randomBytes } from "crypto";
 
-export async function makeRefreshToken(userId) {
+export async function makeRefreshToken(userID) {
   const expiresIn = parseInt(cfg.refreshTokenExpiresIn) * 1000; // convert to ms
   const expiresAt = new Date(Date.now() + expiresIn);
   const token = randomBytes(64).toString("hex");
 
   const refreshToken = new RefreshToken({
     token: token,
-    userId: userId,
+    userID: userID,
     expiresAt: expiresAt,
   });
 
@@ -20,15 +20,15 @@ export async function makeRefreshToken(userId) {
 export async function verifyRefreshToken(token) {
   const dbToken = await RefreshToken.findOne({ token: token });
   if (!dbToken) {
-    return { valid: false, userId: null };
+    return { valid: false, userID: null };
   }
 
   if (dbToken.expiresAt < new Date()) {
     await RefreshToken.deleteOne({ token: token });
-    return { valid: false, userId: null };
+    return { valid: false, userID: null };
   }
 
-  return { valid: true, userId: dbToken.userId };
+  return { valid: true, userID: dbToken.userID };
 }
 
 // Later add function to revoke tokens
@@ -38,7 +38,7 @@ export async function deleteRefreshToken(token) {
   return dbToken;
 }
 
-export async function getUserRefreshTokens(userId) {
-  const tokens = await RefreshToken.find({ userId: userId });
+export async function getUserRefreshTokens(userID) {
+  const tokens = await RefreshToken.find({ userID: userID });
   return tokens;
 }

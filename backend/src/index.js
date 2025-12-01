@@ -4,10 +4,14 @@ import serviceStartup from "./config/startup.js";
 import multer from "multer";
 import { fileTypeFromBuffer } from "file-type";
 import { uploadObjectToS3 } from "./services/putObjectS3.js";
-import usersRouter from "./routes/users.js";
+import usersRouter from "./routes/userRoutes.js";
+import resetPasswordRouter from "./routes/resetPasswordRoute.js";
+import cookieParser from "cookie-parser";
+import { errorHandlingMiddleware } from "./middleware/errorMiddleware.js";
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
@@ -55,6 +59,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 // END TEMP CODE
 
 app.use("/users", usersRouter);
+app.use("/reset-password", resetPasswordRouter);
 
 app.listen(3000, async () => {
   await serviceStartup();
@@ -62,7 +67,4 @@ app.listen(3000, async () => {
   console.log("Server is running on http://localhost:3000");
 });
 
-app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
-  res.status(500).send("Internal Server Error xd");
-});
+app.use(errorHandlingMiddleware);

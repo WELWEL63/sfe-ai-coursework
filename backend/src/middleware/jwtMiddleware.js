@@ -3,11 +3,11 @@ import cfg from "../config/config.js";
 
 const { sign, verify } = pkg;
 
-export async function makeJWT(userId) {
+export async function makeJWT(userID) {
   const token = sign(
     {
       iss: cfg.jwtIss,
-      sub: userId,
+      sub: userID,
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + parseInt(cfg.jwtExpiresIn),
     },
@@ -22,16 +22,31 @@ export async function verifyJWT(token) {
   try {
     decoded = verify(token, cfg.jwtSecret, { algorithms: ["HS256"] });
   } catch (err) {
-    return { success: false, error: "Invalid token" };
+    return {
+      success: false,
+      data: { type: "invalid_token", message: "Invalid token" },
+    };
   }
   if (decoded.iss !== cfg.jwtIss) {
-    return { success: false, error: "Invalid issuer" };
+    return {
+      success: false,
+      data: { type: "invalid_issuer", message: "Invalid issuer" },
+    };
   }
   if (decoded.expresIn < Math.floor(Date.now() / 1000)) {
-    return { success: false, error: "Token has expired" };
+    return {
+      success: false,
+      data: { type: "expired", message: "Token has expired" },
+    };
   }
   if (!decoded.sub) {
-    return { success: false, error: "Invalid subject" };
+    return {
+      success: false,
+      data: { type: "invalid_subject", message: "Invalid subject" },
+    };
   }
-  return { success: true, userID: decoded.sub };
+  return {
+    success: true,
+    data: { type: "valid", message: "Token is valid", userID: decoded.sub },
+  };
 }

@@ -1,21 +1,16 @@
 import Users from "../models/usersModel.js";
+import { HTTPCodes, respondWithJson } from "../utils/json.js";
 import {
-  HTTPCodes,
-  respondWithErrorJson,
-  respondWithJson,
-} from "../utils/json.js";
+  BadRequestError,
+  NotFoundError,
+} from "../middleware/errorMiddleware.js";
 
 export async function handlerGetUser(req, res) {
-  const userId = req.body.userID;
-  if (!userId)
-    return respondWithErrorJson(
-      res,
-      HTTPCodes.BAD_REQUEST,
-      "User ID is required."
-    );
-  const dbUser = await Users.findById(userId).select("-passwordHash");
+  const userID = req.body.userID;
+  if (!userID) throw new BadRequestError("User ID is required.");
+  const dbUser = await Users.findById(userID).select("-passwordHash");
   if (!dbUser) {
-    return respondWithErrorJson(res, HTTPCodes.NOT_FOUND, "User not found.");
+    throw new NotFoundError("User not found.");
   }
   return respondWithJson(res, HTTPCodes.OK, {
     userID: dbUser._id,
