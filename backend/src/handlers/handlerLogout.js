@@ -1,0 +1,12 @@
+import RefreshToken from "../models/refreshTokenModel.js";
+import { respondWithJson } from "../utils/json.js";
+
+export async function handlerLogout(req, res) {
+  res.clearCookie("accessToken");
+  const refresh = req?.cookies?.refreshToken;
+  if (refresh) {
+    res.clearCookie("refreshToken");
+    await RefreshToken.deleteOne({ token: refresh });
+  }
+  respondWithJson(res, 200, { message: "Logged out successfully." });
+}

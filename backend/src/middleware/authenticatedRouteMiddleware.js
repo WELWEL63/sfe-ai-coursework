@@ -1,4 +1,3 @@
-import { HTTPCodes, respondWithErrorJson } from "../utils/json.js";
 import { verifyJWT, makeJWT } from "./jwtMiddleware.js";
 import { verifyRefreshToken } from "./refreshTokenMiddleware.js";
 import Users from "../models/usersModel.js";
@@ -6,6 +5,11 @@ import cfg from "../config/config.js";
 import { ForbiddenError, UnauthorizedError } from "./errorMiddleware.js";
 
 export async function authRoute(req, res, next) {
+  const bodyExists = req?.body || false;
+
+  if (!bodyExists) {
+    throw new UnauthorizedError("Request body is missing.");
+  }
   const accessToken = req?.cookies?.accessToken || "";
   const refreshToken = req?.cookies?.refreshToken || "";
   if (!accessToken && !refreshToken) {
@@ -39,6 +43,12 @@ export async function adminRoute(req, res, next) {
   const dbUser = await Users.findById(req.body.userID);
   if (!dbUser || dbUser.role !== "admin") {
     throw new ForbiddenError("Admin privileges are required.");
+  }
+  if (!dbUser.mfaEnabled) {
+    throw new ForbiddenError(
+      "MFA must be enabled for admin users.",
+      "MFA_REQUIRED_FOR_ADMIN"
+    );
   }
   next();
 }
