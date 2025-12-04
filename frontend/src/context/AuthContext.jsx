@@ -14,7 +14,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      setLoading(true);
       try {
         const res = await api.get("/users", { withCredentials: true });
         console.log("Auth check response:", res);
@@ -40,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     checkAuth();
-  }, []);
+  }, [setIsAuthenticated, setLoading, setUser]);
 
   return (
     <AuthContext.Provider
