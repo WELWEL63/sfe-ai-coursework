@@ -52,6 +52,11 @@ export default function HomePage() {
   const [messages, setMessages] = useState([]);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
 
+  // Chat history stored in browser
+  const [chatHistory, setChatHistory] = useState(() => {
+    return JSON.parse(localStorage.getItem("chatHistory")) || [];
+  });
+
   // Theme system
   const [isDarkMode, setIsDarkMode] = useState(true);
   const toggleTheme = () => setIsDarkMode((p) => !p);
@@ -62,6 +67,7 @@ export default function HomePage() {
     ? "bg-[#2a2a2a] border-[#3a3a3a]"
     : "bg-white border-[#dcdcdc]";
 
+  // LOGOUT
   const handleLogout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
@@ -69,6 +75,32 @@ export default function HomePage() {
     navigate("/login", { replace: true });
   };
 
+  // ** NEW CHAT HANDLER — SAVES HISTORY & RESETS SESSION **
+  const handleNewChat = () => {
+    if (messages.length > 0 && selectedCharacter) {
+      const saved = {
+        id: Date.now(),
+        character: selectedCharacter,
+        messages,
+        timestamp: new Date().toISOString(),
+      };
+
+      const updated = [saved, ...chatHistory];
+      setChatHistory(updated);
+      localStorage.setItem("chatHistory", JSON.stringify(updated));
+    }
+
+    setMessages([]);
+    setSelectedCharacter(null);
+  };
+
+  // Load previous chat from sidebar
+  const loadChat = (chat) => {
+    setMessages(chat.messages);
+    setSelectedCharacter(chat.character);
+  };
+
+  // Messaging logic
   const handleSendMessage = (value) => {
     if (!value.trim()) return;
 
@@ -91,7 +123,7 @@ export default function HomePage() {
       {/* SIDEBAR */}
       <aside className={`w-64 border-r border-[#2c2c2c] flex flex-col ${themeBg}`}>
 
-        {/* Logo + App name */}
+        {/* Logo */}
         <div className="px-6 py-5 flex items-center gap-3 border-b border-[#2c2c2c]">
           <img src={logoIcon} className="h-12 w-12" alt="Logo" />
           <div>
@@ -102,15 +134,18 @@ export default function HomePage() {
 
         {/* New Chat Button */}
         <div className="px-4 py-3">
-          <button className="w-full py-2 rounded-full bg-[#2d2d2d] hover:bg-[#3a3a3a] text-sm">
+          <button
+            onClick={handleNewChat}
+            className="w-full py-2 rounded-full bg-[#2d2d2d] hover:bg-[#3a3a3a] text-sm"
+          >
             + New Chat
           </button>
         </div>
 
-        {/* Character Selection */}
-        <div className="px-4 flex-1 overflow-y-auto">
+        {/* Character Select */}
+        <div className="px-4 overflow-y-auto">
           <p className="text-[11px] uppercase tracking-wider text-[#6b6b6b] mb-2">
-            Choose a character
+            Choose a Character
           </p>
 
           {CHARACTERS.map((char) => (
@@ -133,10 +168,37 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Logout */}
-        <div className="px-4 py-3 border-t border-[#2c2c2c] flex items-center justify-between text-xs text-[#c3c3c3]">
+        {/* CHAT HISTORY */}
+        <div className="px-4 mt-4 flex-1 overflow-y-auto">
+          <p className="text-[11px] uppercase tracking-wider text-[#6b6b6b] mb-2">
+            Chat History
+          </p>
+
+          {chatHistory?.length === 0 && (
+            <p className="text-xs text-[#777] italic">No saved chats yet...</p>
+          )}
+
+          {chatHistory.map((chat) => (
+            <button
+              key={chat.id}
+              onClick={() => loadChat(chat)}
+              className="w-full text-left py-2 px-2 mb-2 rounded-lg hover:bg-[#222]"
+            >
+              <p className="text-sm font-medium">{chat.character.name}</p>
+              <p className="text-[10px] text-[#9a9a9a]">
+                {new Date(chat.timestamp).toLocaleString()}
+              </p>
+            </button>
+          ))}
+        </div>
+
+        {/* LOGOUT */}
+        <div className="px-4 py-3 border-t border-[#2c2c2c] flex items-center justify-between text-xs">
           <span>{actualUsername}</span>
-          <button onClick={handleLogout} className="text-xl hover:text-red-400" style={{ color: "#6b6b6b" }}>
+          <button 
+            onClick={handleLogout} 
+            className="text-xl hover:text-red-400 text-[#6b6b6b]"
+          >
             <FiLogOut />
           </button>
         </div>
@@ -145,10 +207,8 @@ export default function HomePage() {
 
       {/* MAIN CHAT AREA */}
       <main className="flex-1 flex flex-col">
-
-        {/* If no character selected → show centered welcome */}
         {!selectedCharacter ? (
-          <div className="flex flex-col items-center justify-center h-full text-center gap-4 px-6">
+          <div className="flex flex-col items-center justify-center h-full text-center gap-4">
             <img src={logoIcon} className="w-28 h-28 opacity-90" alt="Logo" />
             <h1 className="text-2xl font-semibold">Welcome, {actualUsername}! 👋</h1>
             <p className="text-sm text-[#9d9d9d] max-w-md">
@@ -167,10 +227,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full hover:bg-[#2c2c2c] text-xl"
-              >
+              <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-[#2c2c2c] text-xl">
                 {isDarkMode ? <FiSun /> : <FiMoon />}
               </button>
             </header>
@@ -192,7 +249,7 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Input Area */}
+            {/* Input */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -202,9 +259,7 @@ export default function HomePage() {
               }}
               className="border-t border-[#2c2c2c] px-6 py-3"
             >
-              <div
-                className={`max-w-3xl mx-auto flex items-center gap-2 ${cardBg} px-4 py-2 rounded-full`}
-              >
+              <div className={`max-w-3xl mx-auto flex items-center gap-2 ${cardBg} px-4 py-2 rounded-full`}>
                 <input
                   name="query"
                   placeholder={`Message ${selectedCharacter.name}...`}
@@ -225,17 +280,15 @@ export default function HomePage() {
   );
 }
 
-// Message UI Component
+// Message Component
 function MessageBubble({ msg, user, character, bubbleBg }) {
   const isUser = msg.role === "user";
 
   return (
     <div className={`flex gap-2 mb-4 ${isUser ? "flex-row-reverse" : ""}`}>
-      <img
-        src={isUser ? null : character.img}
-        alt=""
-        className="h-7 w-7 rounded-full bg-[#2c2c2c] object-cover flex items-center justify-center"
-      />
+      {!isUser && (
+        <img src={character.img} className="h-7 w-7 rounded-full" alt="" />
+      )}
       <div className="max-w-[70%]">
         <p className="text-[11px] text-[#8a8a8a] mb-1">
           {isUser ? user : character.name}
