@@ -31,7 +31,7 @@ export default function HomePage() {
 
   const themeBg = isDarkMode ? "bg-[#1a1a1a] text-white" : "bg-[#fafafa] text-[#111]";
   const cardBg = isDarkMode ? "bg-[#292929]" : "bg-[#ececec]";
-  const bubbleBg = isDarkMode ? "bg-[#2b2b2b] border-[#3a3a3a]" : "bg-white border-gray-300";
+  const bubbleBg = isDarkMode ? "bg-[#2b2b2b] border-[#3a3a3a]" : "bg-black border-gray-300";
 
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
@@ -42,7 +42,6 @@ export default function HomePage() {
     navigate("/login", { replace: true });
   };
 
-  // Start New Chat & Save previous
   const startNewChat = () => {
     if (selectedCharacter && messages.length > 0) {
       const topic = messages.find(m => m.role === "user")?.content || "Conversation";
@@ -55,13 +54,11 @@ export default function HomePage() {
     setSelectedCharacter(null);
   };
 
-  // Load chat from history
   const loadChat = chat => {
     setSelectedCharacter(chat.character);
     setMessages(chat.messages);
   };
 
-  // Send message
   const handleSendMessage = value => {
     if (!value.trim() || !selectedCharacter) return;
 
@@ -82,7 +79,7 @@ export default function HomePage() {
 
   return (
     <div className={`min-h-screen flex flex-col md:flex-row ${themeBg}`}>
-
+      
       {/* -------------------- LEFT SIDEBAR -------------------- */}
       <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#2c2c2c] flex flex-col">
         {/* Logo */}
@@ -94,25 +91,31 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* New Chat */}
-        <div className="px-4 py-3">
-          <button onClick={startNewChat} className="w-full py-2 rounded-full bg-[#2d2d2d] hover:bg-[#3b3b3b] text-sm">+ New Chat</button>
-        </div>
+      {/* New Chat */}
+<div className="px-4 py-3">
+  <button
+    onClick={startNewChat}
+    className={`w-full py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+      isDarkMode
+        ? "bg-[#2d2d2d] hover:bg-[#3b3b3b] text-white"
+        : "bg-[#ececec] hover:bg-[#dcdcdc] text-[#111]"
+    }`}
+  >
+    + New Chat
+  </button>
+</div>
+
 
         {/* Chat History */}
         <div className="px-4 flex-1 overflow-y-auto mt-4">
-          <p className="text-[11px] uppercase text-gray-500 mb-2">Chat History</p>
+          <p className="text-[15px] uppercase text-gray-500 mb-2">Chat History</p>
           {chatHistory.length === 0 && <p className="text-xs text-gray-500 italic">No chats yet...</p>}
-
           {chatHistory.map(chat => (
             <div key={chat.id} className="flex items-center justify-between w-full mb-2 rounded-lg hover:bg-[#222]">
-              <button
-                onClick={() => loadChat(chat)}
-                className="text-left flex-1 py-2 px-2"
-              >
+              <button onClick={() => loadChat(chat)} className="text-left flex-1 py-2 px-2">
                 <p className="text-sm font-medium">{chat.character.name}</p>
-                <p className="text-[10px] text-gray-400 truncate">{chat.topic}</p>
-                <p className="text-[10px] text-gray-500">{new Date(chat.timestamp).toLocaleString()}</p>
+                <p className="text-[12px] text-gray-400 truncate">{chat.topic}</p>
+                <p className="text-[12px] text-gray-500">{new Date(chat.timestamp).toLocaleString()}</p>
               </button>
               <button
                 onClick={() => {
@@ -129,14 +132,31 @@ export default function HomePage() {
         </div>
 
         {/* Logout */}
-        <div className="px-4 py-3 border-t border-[#2c2c2c] flex justify-between text-xs">
+        <div className="px-4 py-3 border-t border-[#2c2c2c] flex justify-between text-xl">
           <span>{actualUsername}</span>
-          <button onClick={handleLogout} className="text-xl hover:text-red-400 text-gray-500"><FiLogOut /></button>
+          <button
+            onClick={handleLogout}
+            className="p-2 rounded-full hover:bg-red-500 hover:text-white transition"
+            title="Logout"
+          >
+            <FiLogOut size={20} />
+          </button>
         </div>
       </aside>
 
       {/* -------------------- MAIN AREA -------------------- */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col relative">
+
+        {/* Theme Toggle on top right */}
+        <div className="absolute top-4 right-4 z-50">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full hover:bg-gray-600 transition text-white"
+            title="Toggle Theme"
+          >
+            {isDarkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
+          </button>
+        </div>
 
         {!selectedCharacter ? (
           // Welcome Screen with Logo, Text, and Character Cards
@@ -147,8 +167,8 @@ export default function HomePage() {
 
             {/* Welcome Text */}
             <h1 className="text-3xl font-bold">Welcome, {actualUsername}! 👋</h1>
-            <p className="text-gray-400 max-w-md mb-6">Select a historical figure below to start chatting and explore their world.</p>
-
+            <p className="text-gray-400 max-w-md mb-6">Choose a legendary mind below and dive into their world — ask questions, explore their ideas, and see history come alive through conversation.
+</p>
             {/* Character Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
               {CHARACTERS.map(char => (
@@ -157,10 +177,7 @@ export default function HomePage() {
                   className={`flex flex-col items-center p-5 rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-300 ${cardBg} border border-gray-700`}
                   style={{ background: isDarkMode ? 'linear-gradient(145deg, #292929, #1f1f1f)' : 'linear-gradient(145deg, #ececec, #dcdcdc)' }}
                 >
-                  <img
-                    src={char.img}
-                    className="h-28 w-28 rounded-full border-4 border-purple-500 shadow-lg mb-4"
-                  />
+                  <img src={char.img} className="h-28 w-28 rounded-full border-4 border-blue-500 shadow-lg mb-4" />
                   <p className="text-xl font-semibold mb-1">{char.name}</p>
                   <p className="text-sm text-gray-400 mb-2">{char.subtitle}</p>
                   <p className="text-sm text-gray-500 mb-4">{char.intro}</p>
