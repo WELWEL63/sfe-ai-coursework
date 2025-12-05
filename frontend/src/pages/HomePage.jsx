@@ -1,24 +1,70 @@
-import { useState, useEffect, useContext } from "react"; 
+import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo-icon.png"; 
+
 import logoIcon from "../assets/logo-icon.png";
+
+import turingImg from "../assets/turing.png";
+import teslaImg from "../assets/tesla.png";
+import vonImg from "../assets/von.png";
+import adaImg from "../assets/ada.png";
+
+import { FiLogOut, FiSun, FiMoon } from "react-icons/fi";
+
+// CHARACTER DEFINITIONS
+const CHARACTERS = [
+  {
+    id: "turing",
+    name: "Alan Turing",
+    subtitle: "Father of Computing",
+    img: turingImg,
+    intro:
+      "Alan sat at his desk in a small corner room filled with scribbled papers.",
+  },
+  {
+    id: "tesla",
+    name: "Nikola Tesla",
+    subtitle: "Master of Electricity",
+    img: teslaImg,
+    intro: "Tesla stood before a towering coil, sparks humming through the air.",
+  },
+  {
+    id: "von",
+    name: "John von Neumann",
+    subtitle: "The Machine Architect",
+    img: vonImg,
+    intro:
+      "Von Neumann leaned forward, stacks of equations neatly aligned on his desk.",
+  },
+  {
+    id: "ada",
+    name: "Ada Lovelace",
+    subtitle: "The Enchantress of Numbers",
+    img: adaImg,
+    intro:
+      "Ada held her notebook tightly, diagrams of impossible engines filling the pages.",
+  },
+];
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { user, setIsAuthenticated, setUser } = useContext(AuthContext);
 
   const actualUsername = user?.username || "Guest";
+
   const [messages, setMessages] = useState([]);
+  const [selectedCharacter, setSelectedCharacter] = useState(CHARACTERS[0]);
 
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    return saved !== "light";
-  });
+  // THEME (dark by default)
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
-  useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
+const toggleTheme = () => setIsDarkMode((prev) => !prev);
+
+// Updated dark gray colors
+const themeBg = isDarkMode ? "bg-[#1a1a1a] text-[#f5f5f5]" : "bg-[#fafafa] text-[#111]";
+const cardBg = isDarkMode ? "bg-[#2c2c2c]" : "bg-[#f0f0f0]";
+const bubbleBg = isDarkMode ? "bg-[#2a2a2a] border-[#3a3a3a]" : "bg-white border-[#dcdcdc]";
+
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
@@ -43,268 +89,183 @@ export default function HomePage() {
       const aiMsg = {
         id: Date.now() + 1,
         role: "assistant",
-        content: " Processing... this is a simulated message. Connect me to the backend API to respond intelligently.",
+        content: `${selectedCharacter.name} is thinking... (Simulated response.)`,
       };
       setMessages((prev) => [...prev, aiMsg]);
-    }, 1000);
+    }, 900);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const input = form.elements.query;
+    const input = e.currentTarget.elements.query;
     if (!input.value.trim()) return;
     handleSendMessage(input.value.trim());
     input.value = "";
   };
 
-  const toggleTheme = () => setIsDarkMode((prev) => !prev);
-
-  // Dark mode colors matching VS black theme
-  const bgPrimary = isDarkMode ? "bg-[#121212]" : "bg-white";
-  const bgSecondary = isDarkMode ? "bg-[#1e1e1e]" : "bg-slate-50";
-  const bgCard = isDarkMode ? "bg-[#1e1e1e]" : "bg-white";
-  const bgInput = isDarkMode ? "bg-[#1e1e1e]" : "bg-white";
-  const textPrimary = isDarkMode ? "text-white" : "text-slate-900";
-  const textSecondary = isDarkMode ? "text-[#c5c5c5]" : "text-slate-600";
-  const borderColor = isDarkMode ? "border-[#2c2c2c]" : "border-slate-200";
-  const borderColorDark = isDarkMode ? "border-[#2c2c2c]" : "border-slate-200";
-
   return (
-    <div className={`min-h-screen ${bgPrimary} ${textPrimary} flex flex-col transition-colors duration-300`}>
-      
-      {/* Top Bar */}
-      <header className={`h-18 border-b ${borderColor} flex items-center justify-between px-4 md:px-6 transition-colors duration-300`}>
-        <div className="flex items-center gap-2">
-          <img src={logo} alt="App Logo" className="h-15 w-15 rounded-lg shadow-sm object-cover" />
-          <span className="text-sm font-semibold tracking-tight">
-            History.AI — Study Assistant
-          </span>
-        </div>
+    <div className={`min-h-screen flex ${themeBg}`}>
+      {/* LEFT SIDEBAR */}
+      <aside className={`w-64 ${themeBg} border-r border-[#1f1f1f] flex flex-col`}>
+        {/* HEADER */}
+<div className="px-6 py-5 flex items-center gap-4 border-b border-[#2c2c2c]">
+  {/* Logo */}
+  <div className="h-12 w-12 rounded-full bg-[#2c2c2c] overflow-hidden flex items-center justify-center shadow-md">
+    <img src={logoIcon} alt="Logo" className="h-10 w-10 object-cover" />
+  </div>
 
-        <div className="flex items-center gap-3">
-          <span className={`hidden sm:inline text-xs ${textSecondary}`}>{actualUsername}</span>
-          <div className={`h-10 w-10 rounded-full ${isDarkMode ? "bg-[#1e1e1e]" : "bg-slate-200"} flex items-center justify-center text-[16px] font-medium`}>
-            {actualUsername.charAt(0).toUpperCase()}
-          </div>
+  {/* Title */}
+  <div>
+    <p className="text-lg font-bold text-[#f5f5f5]">History.AI</p>
+    <p className="text-sm text-[#c3c3c3]">Powered by Group 10</p>
+  </div>
+</div>
 
-          <button
-            onClick={handleLogout}
-            className={`hover:text-red-400 text-sm ${textSecondary} transition-colors duration-200`}
-            title="Logout"
-          >
-            ⎋
+        {/* CREATE BUTTON */}
+        <div className="px-4 py-3">
+          <button className="w-full flex items-center justify-center gap-2 rounded-full bg-[#2d2d2d] hover:bg-[#3a3a3a] text-xs py-2">
+            + New Chat
           </button>
         </div>
-      </header>
 
-      {/* Main Layout */}
-      <main className="flex-1 flex overflow-hidden">
+        {/* CHARACTER LIST */}
+        <div className="px-4 flex-1 overflow-y-auto">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-[#6b6b6b] mb-2">
+            Characters - Select who you want to chat with 
+          </p>
 
-        {/* LEFT SIDEBAR */}
-        <aside className={`hidden md:flex w-60 flex-col border-r ${borderColorDark} ${bgSecondary} px-3 py-4 gap-4`}>
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-[#c5c5c5] mb-2">Navigation</p>
-            <nav className="space-y-1 text-xs">
-              <SidebarButton active label="Dashboard" isDark={isDarkMode} />
-              <SidebarButton label="Messages" isDark={isDarkMode} />
-              <SidebarButton label="Saved Notes" isDark={isDarkMode} />
-              <SidebarButton label="Resources" isDark={isDarkMode} />
-            </nav>
-
-            {/* Description */}
-            <p className="text-sm text-zinc-400 leading-relaxed mb-4 mt-4 px-2">
-              Your <span className="text-cyan-400 font-semibold">AI-powered</span> guide to computing history. 
-              Explore the legends who shaped our digital world.
-            </p>
-
-            {/* Featured Pioneers Section */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <p className="text-amber-400 font-bold text-sm mb-2 px-2 flex items-center gap-2">
-                <span className="text-lg">⭐</span>
-                Featured Pioneers
-              </p>
-
-              <div className="space-y-3">
-                {[
-                  { name: "Alan Turing", role: "Father of AI & Cryptography", icon: "🧠", color: "cyan" },
-                  { name: "John von Neumann", role: "Computer Architecture", icon: "🖥️", color: "blue" },
-                  { name: "Ada Lovelace", role: "First Programmer", icon: "👩‍💻", color: "purple" },
-                  { name: "Nikola Tesla", role: "AC Power & Visionary", icon: "⚡", color: "amber" },
-                ].map((pioneer, idx) => (
-                  <div
-                    key={idx}
-                    className="group relative p-3 rounded-xl bg-[#1e1e1e]/70 border border-[#2c2c2c] hover:border-cyan-500/40 hover:bg-[#1e1e1e]/80 transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:-translate-y-1"
-                  >
-                    {/* Glow effect */}
-                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ backgroundColor: `rgba(0, 255, 255, 0.05)` }}></div>
-
-                    <div className="relative flex items-start gap-3">
-                      {/* Icon */}
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-xl border border-gray-700 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300" style={{ background: "linear-gradient(135deg, rgba(0,255,255,0.1), rgba(0,255,255,0.05))" }}>
-                        {pioneer.icon}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-cyan-400 text-sm mb-1 group-hover:text-cyan-300 transition-colors">
-                          {pioneer.name}
-                        </p>
-                        <p className="text-xs text-zinc-500 leading-tight">
-                          {pioneer.role}
-                        </p>
-                      </div>
-
-                      {/* Arrow */}
-                      <svg className="w-4 h-4 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                ))}
+          {CHARACTERS.map((char) => (
+            <button
+              key={char.id}
+              onClick={() => {
+                setSelectedCharacter(char);
+                setMessages([]);
+              }}
+              className={`w-full flex items-center gap-3 text-left px-2 py-2 rounded-lg 
+                hover:bg-[#222] text-[13px] transition
+                ${selectedCharacter.id === char.id ? "bg-[#1a1a1a]" : ""}
+              `}
+            >
+              <div className="h-8 w-8 rounded-full bg-[#2d2d2d] overflow-hidden flex items-center justify-center">
+                <img src={char.img} alt={char.name} className="h-7 w-7 object-cover" />
               </div>
-            </div>
-          </div>
-
-          <div className="mt-auto text-[10px] text-[#c5c5c5]">
-            History.AI — Your Smart Study Companion • © 2025
-          </div>
-        </aside>
-
-        {/* Chat Window */}
-        <section className="flex-1 flex justify-center overflow-hidden px-3 md:px-6 py-4">
-          <div className="w-full max-w-3xl flex flex-col h-full gap-3">
-
-            <div className="px-1">
-              <h1 className="text-lg font-semibold">Ask anything. Learn faster.</h1>
-              <p className={`text-xs md:text-sm ${textSecondary} mt-1`}>
-                Generate explanations, quizzes, summaries, examples, flashcards, and more — instantly.
-              </p>
-            </div>
-
-            <div className={`flex-1 rounded-2xl border ${borderColorDark} ${bgCard} flex flex-col overflow-hidden shadow-lg`}>
-              
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                {messages.length === 0 && (
-                  <div className={`h-full flex flex-col items-center justify-center text-center ${textSecondary} text-sm`}>
-                    <p className="font-medium mb-1">Start a conversation with History.AI</p>
-                    <p className="text-xs max-w-sm">Your messages will appear here.</p>
-                  </div>
-                )}
-
-                {messages.map((msg) => (
-                  <MessageBubble key={msg.id} msg={msg} user={actualUsername} isDarkMode={isDarkMode} />
-                ))}
-              </div>
-
-              <div className={`border-t ${borderColorDark} px-4 py-3`}>
-                <form onSubmit={handleSubmit} className="flex items-start gap-2">
-                  <textarea
-                    name="query"
-                    rows={1}
-                    placeholder="Type your question..."
-                    className={`flex-1 rounded-xl border ${borderColor} ${bgInput} px-3.5 py-2.5 text-sm text-white resize-none`}
-                  />
-                  <button
-                    type="submit"
-                    className="rounded-full bg-[#1e1e1e] px-4 py-1.5 text-xs font-medium text-white hover:bg-[#2c2c2c] shadow-lg shadow-black/50"
-                  >
-                    Send
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* RIGHT PANEL */}
-        <aside className={`hidden lg:flex w-72 xl:w-80 flex-col border-l ${borderColorDark} ${bgSecondary} px-3 py-4 gap-4`}>
-          <div className={`rounded-2xl border ${borderColor} ${bgCard} p-4 shadow-lg`}>
-            <h2 className="text-sm font-semibold">Preferences</h2>
-            <p className={`text-[11px] ${textSecondary} mt-1`}>Customize how History.AI assists you.</p>
-
-            <div className="mt-3 flex items-center justify-between rounded-lg border px-3 py-2">
               <div>
-                <span className="text-[11px] font-medium">Theme</span>
-                <p className="text-[10px] opacity-70">{isDarkMode ? "Dark" : "Light"} mode</p>
+                <p className="font-medium">{char.name}</p>
+                <p className="text-[10px] text-[#888]">{char.subtitle}</p>
               </div>
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full ${isDarkMode ? "bg-[#2c2c2c]" : "bg-gray-300"}`}
-              >
-                <span className={`inline-block h-4 w-4 bg-white rounded-full transform transition ${isDarkMode ? "translate-x-5" : "translate-x-1"}`} />
-              </button>
-            </div>
+            </button>
+          ))}
+        </div>
 
-            <div className="mt-2 space-y-2 text-[11px]">
-              <ToolToggle label="Short concise answers" isDark={isDarkMode} />
-              <ToolToggle label="Detailed explanation mode" isDark={isDarkMode} />
-              <ToolToggle label="Study format output" isDark={isDarkMode} />
+       {/* LOGOUT */}
+<div
+  className={`mt-auto px-4 py-3 flex items-center justify-between text-[11px] ${
+    isDarkMode
+      ? "border-t border-[#2c2c2c] text-[#c3c3c3]"
+      : "border-t border-[#dcdcdc] text-[#555]"
+  }`}
+>
+  <span>{actualUsername}</span>
+  <button
+    onClick={handleLogout}
+    className="hover:text-red-400 text-lg"
+  >
+    <FiLogOut />
+  </button>
+</div>
+      </aside>
+
+      {/* MAIN CHAT AREA */}
+      <main className={`flex-1 flex flex-col ${themeBg}`}>
+        {/* TOP BAR */}
+        <header className="h-14 border-b border-[#1f1f1f] flex items-center px-6 justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-full bg-[#2d2d2d] overflow-hidden flex items-center justify-center">
+              <img src={selectedCharacter.img} alt="Character" className="h-8 w-8 object-cover" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">{selectedCharacter.name}</p>
+              <p className="text-[11px] text-[#a3a3a3]">{selectedCharacter.subtitle}</p>
             </div>
           </div>
 
-          <div className={`rounded-2xl border ${borderColor} ${bgCard} p-4 shadow-lg`}>
-            <h2 className="text-sm font-semibold">Suggested Topics</h2>
-            <p className={`text-[11px] ${textSecondary} mt-1`}>Quick prompts to explore.</p>
+          {/* THEME TOGGLE */}
+          <button
+            onClick={toggleTheme}
+            className="text-xl p-2 rounded-full hover:bg-[#1f1f1f]"
+          >
+            {isDarkMode ? <FiSun /> : <FiMoon />}
+          </button>
+        </header>
 
-            <ul className="mt-3 text-[11px] space-y-2">
-              <li className="border border-[#2c2c2c] px-3 py-2 rounded-lg">Artificial Intelligence</li>
-              <li className="border border-[#2c2c2c] px-3 py-2 rounded-lg">Data Structures</li>
-              <li className="border border-[#2c2c2c] px-3 py-2 rounded-lg">Cybersecurity Fundamentals</li>
-              <li className="border border-[#2c2c2c] px-3 py-2 rounded-lg">Software Engineering Basics</li>
-            </ul>
-          </div>
-        </aside>
+        {/* MESSAGES */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {messages.length === 0 ? (
+            <div className="text-sm text-[#a3a3a3] max-w-2xl">
+              <p>{selectedCharacter.intro}</p>
+            </div>
+          ) : (
+            <div className="space-y-4 max-w-3xl">
+              {messages.map((msg) => (
+                <MessageBubble
+                  key={msg.id}
+                  msg={msg}
+                  user={actualUsername}
+                  character={selectedCharacter}
+                  bubbleBg={bubbleBg}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* INPUT BAR */}
+        <div className="border-t border-[#1f1f1f] px-6 py-3">
+          <form
+            onSubmit={handleSubmit}
+            className={`max-w-3xl mx-auto flex items-center gap-2 ${cardBg} rounded-full px-4 py-2`}
+          >
+            <input
+              name="query"
+              placeholder={`Message ${selectedCharacter.name}...`}
+              className="flex-1 bg-transparent outline-none text-sm placeholder:text-[#6b6b6b]"
+            />
+            <button
+              type="submit"
+              className="h-8 w-8 rounded-full bg-[#2d2d2d] flex items-center justify-center hover:bg-[#3a3a3a]"
+            >
+              ▶
+            </button>
+          </form>
+          <p className="mt-2 text-[11px] text-[#6b6b6b] text-center">
+            This is A.I. and not a real person. Treat everything it says as fiction.
+          </p>
+        </div>
       </main>
     </div>
   );
 }
 
-/* SUPPORTING COMPONENTS */
-function SidebarButton({ label, active, isDark }) {
-  return (
-    <button
-      className={`w-full text-left px-3 py-1.5 rounded-md transition ${
-        active
-          ? isDark ? "bg-[#2c2c2c] text-white" : "bg-slate-200 text-slate-900"
-          : isDark ? "text-[#c5c5c5] hover:bg-[#2c2c2c] hover:text-white" : "text-slate-600 hover:bg-slate-200"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
-
-function ToolToggle({ label, isDark }) {
-  const [enabled, setEnabled] = useState(false);
-  return (
-    <div className="flex items-center justify-between px-2">
-      <span>{label}</span>
-      <button
-        onClick={() => setEnabled((prev) => !prev)}
-        className={`h-4 w-7 rounded-full transition flex items-center ${
-          enabled ? "bg-[#2c2c2c]" : isDark ? "bg-[#2c2c2c]" : "bg-gray-300"
-        }`}
-      >
-        <span className={`h-3 w-3 bg-white rounded-full transition ${enabled ? "translate-x-3" : "translate-x-1"}`} />
-      </button>
-    </div>
-  );
-}
-
-function MessageBubble({ msg, user, isDarkMode }) {
+// MESSAGE BUBBLE
+function MessageBubble({ msg, user, character, bubbleBg }) {
   const isUser = msg.role === "user";
 
   return (
     <div className={`flex gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
-      <div className={`h-7 w-7 rounded-full ${isDarkMode ? "bg-[#2c2c2c]" : "bg-slate-200"} flex items-center justify-center text-[10px]`}>
-        {isUser ? user.charAt(0).toUpperCase() : <img src={logoIcon} alt="AI Logo" className="h-6 w-6 object-cover" />}
+      <div className="h-7 w-7 rounded-full bg-[#2d2d2d] overflow-hidden flex items-center justify-center text-[10px]">
+        {isUser ? (
+          user.charAt(0).toUpperCase()
+        ) : (
+          <img src={character.img} alt="AI" className="h-7 w-7 object-cover" />
+        )}
       </div>
 
-      <div className="flex-1">
-        <p className={`text-[11px] opacity-60 mb-0.5`}>{isUser ? user : "History.AI"}</p>
-        <div className={`rounded-2xl border px-3 py-2 text-sm ${isUser ? (isDarkMode ? "bg-[#1e1e1e] border-[#2c2c2c]" : "bg-slate-200 border-slate-300") : (isDarkMode ? "bg-[#1e1e1e] border-[#2c2c2c]" : "bg-slate-100 border-slate-300")}`}>
+      <div className="max-w-[70%]">
+        <p className="text-[11px] text-[#8a8a8a] mb-0.5">
+          {isUser ? user : character.name}
+        </p>
+
+        <div className={`rounded-2xl px-3 py-2 text-sm border ${bubbleBg}`}>
           {msg.content}
         </div>
       </div>
