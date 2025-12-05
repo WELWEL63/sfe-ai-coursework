@@ -109,15 +109,14 @@ const bubbleBg = isDarkMode ? "bg-[#2a2a2a] border-[#3a3a3a]" : "bg-white border
       <aside className={`w-64 ${themeBg} border-r border-[#1f1f1f] flex flex-col`}>
         {/* HEADER */}
 <div className="px-6 py-5 flex items-center gap-4 border-b border-[#2c2c2c]">
-  {/* Logo */}
-  <div className="h-12 w-12 rounded-full bg-[#2c2c2c] overflow-hidden flex items-center justify-center shadow-md">
-    <img src={logoIcon} alt="Logo" className="h-10 w-10 object-cover" />
-  </div>
+{/* Logo */}
+<img src={logoIcon} alt="Logo" className="h-18 w-18 object-cover" />
+
 
   {/* Title */}
   <div>
     <p className="text-lg font-bold text-[#f5f5f5]">History.AI</p>
-    <p className="text-sm text-[#c3c3c3]">Powered by Group 10</p>
+    <p className="text-sm text-[#c3c3c3]">Powered by Group 10- The Jaws of AI</p>
   </div>
 </div>
 
@@ -130,8 +129,8 @@ const bubbleBg = isDarkMode ? "bg-[#2a2a2a] border-[#3a3a3a]" : "bg-white border
 
         {/* CHARACTER LIST */}
         <div className="px-4 flex-1 overflow-y-auto">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-[#6b6b6b] mb-2">
-            Characters - Select who you want to chat with 
+          <p className="text-[12px] uppercase tracking-[0.18em] text-[#6b6b6b] mb-2">
+            Select who you want to chat with 
           </p>
 
           {CHARACTERS.map((char) => (
@@ -237,7 +236,7 @@ const bubbleBg = isDarkMode ? "bg-[#2a2a2a] border-[#3a3a3a]" : "bg-white border
               ▶
             </button>
           </form>
-          <p className="mt-2 text-[11px] text-[#6b6b6b] text-center">
+          <p className="mt-2 text-[15px] text-[#6b6b6b] text-center">
             This is A.I. and not a real person. Treat everything it says as fiction.
           </p>
         </div>
